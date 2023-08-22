@@ -341,4 +341,3 @@ PreviewPane = React.createClass({
 });
 
 React.render(<Window />, document.body);
-

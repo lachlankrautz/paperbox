@@ -2,10 +2,10 @@
 
 [Try the demo](https://lachlankrautz.github.io/paperbox)
 
-To run locally, install `python` and run
+To run locally, install `serve` and run
 
-```sh
-python -m SimpleHTTPServer
+```shell
+serve SimpleHTTPServer
 ```
 
 And then visit `http://localhost:8000` with your browser.

@@ -1,20 +1,24 @@
 function pt(x, y) {
   return {x: x, y: y};
 }
+
 function add(p1, x, y) {
   return pt(p1.x + x, p1.y + y);
 }
+
 function CMrot(deg) {
   return [Math.cos(deg), Math.sin(deg), -Math.sin(deg), Math.cos(deg), 0, 0];
 }
+
 function CMtranslate(x, y) {
   return [1, 0, 0, 1, x * 72, y * 72];
 }
+
 function CMcomp(m0, m1) {
   return [
     m0[0] * m1[0] + m0[1] * m1[2],
     m0[0] * m1[1] + m0[1] * m1[3],
-    
+
     m0[2] * m1[0] + m0[3] * m1[2],
     m0[2] * m1[1] + m0[3] * m1[3],
 
@@ -22,13 +26,15 @@ function CMcomp(m0, m1) {
     m0[4] * m1[1] + m0[5] * m1[3] + m1[5]
   ];
 }
+
 function CMstr(m) {
-  round = function(n) { return n.toFixed(3); };
-  posZero = function(n) { return n === 0 ? 0 : n; };
+  const round = function(n) { return n.toFixed(3); };
+  const posZero = function(n) { return n === 0 ? 0 : n; };
   return m.map(round).map(posZero).join(' ') + ' cm';
 }
+
 function dir2deg(orient) {
-  var deg = 0;
+  let deg = 0;
   if (orient === 'left') {
     deg = Math.PI / 2;
   } else if (orient === 'down') {
@@ -38,21 +44,23 @@ function dir2deg(orient) {
   }
   return deg
 }
+
 function hexToRgb(hex) {
-    var bigint = parseInt(hex, 16);
-    var r = (bigint >> 16) & 255;
-    var g = (bigint >> 8) & 255;
-    var b = bigint & 255;
-    return [r, g, b];
+  const bigint = parseInt(hex, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return [r, g, b];
 }
 
 function PDFDrawer(paperSize) {
   this.paperSize = paperSize;
-  this.doc = new jsPDF('l', 'in', paperSize);
+  this.doc = new jsPDF('l', 'in', paperSize, undefined);
   this.resetCenter();
   this.doc.setLineWidth(1/128);
   return this;
 }
+
 PDFDrawer.prototype.resetCenter = function() {
   this.center = pt(
       this.doc.internal.pageSize.width / 2,
@@ -78,27 +86,27 @@ PDFDrawer.prototype.line = function(p0, p1) {
   this.doc.line(p0.x, p0.y, p1.x, p1.y);
 };
 PDFDrawer.prototype.rotate = function(about, deg) {
-  var y = this.doc.internal.pageSize.height - about.y;
-  var t0 = CMtranslate(-about.x, -y);
-  var r = CMrot(deg);
-  var t1 = CMtranslate(about.x, y);
-  var cm = CMstr(CMcomp(CMcomp(t0, r), t1));
+  const y = this.doc.internal.pageSize.height - about.y;
+  const t0 = CMtranslate(-about.x, -y);
+  const r = CMrot(deg);
+  const t1 = CMtranslate(about.x, y);
+  const cm = CMstr(CMcomp(CMcomp(t0, r), t1));
   this.doc.internal.write(cm);
 };
 PDFDrawer.prototype.flap = function(cent, width, height, attenuation, orient, fill) {
   fill = fill ? fill : 'S';
   // bottom left
-  var x0 = cent.x - width / 2;
-  var y0 = cent.y + height / 2;
+  const x0 = cent.x - width / 2;
+  const y0 = cent.y + height / 2;
 
   this.doc.internal.write('q');
   this.rotate(cent, dir2deg(orient));
   this.doc.lines([
-      [width, 0],
-      [0, attenuation - height],
-      [0, -attenuation, -attenuation, -attenuation, -attenuation, -attenuation],
-      [-(width - 2 * attenuation), 0],
-      [-attenuation, 0, -attenuation, attenuation, -attenuation, attenuation]
+    [width, 0],
+    [0, attenuation - height],
+    [0, -attenuation, -attenuation, -attenuation, -attenuation, -attenuation],
+    [-(width - 2 * attenuation), 0],
+    [-attenuation, 0, -attenuation, attenuation, -attenuation, attenuation]
   ], x0, y0, [1, 1], fill, true);
   this.doc.internal.write('Q');
 };
@@ -113,18 +121,18 @@ PDFDrawer.prototype.flapSingle = function(cent, width, height, attenuation, orie
   this.rotate(cent, dir2deg(orient));
   if(flip) {
     this.doc.lines([
-        [width, 0],
-        [0, -height],
-        [attenuation - width, 0],
-        [-attenuation, 0, -attenuation, attenuation, -attenuation, attenuation],
+      [width, 0],
+      [0, -height],
+      [attenuation - width, 0],
+      [-attenuation, 0, -attenuation, attenuation, -attenuation, attenuation],
     ], x0, y0, [1, 1], fill, true);
   }
   else {
     this.doc.lines([
-        [width, 0],
-        [0, attenuation - height],
-        [0, -attenuation, -attenuation, -attenuation, -attenuation, -attenuation],
-        [attenuation - width, 0]
+      [width, 0],
+      [0, attenuation - height],
+      [0, -attenuation, -attenuation, -attenuation, -attenuation, -attenuation],
+      [attenuation - width, 0]
     ], x0, y0, [1, 1], fill, true);
   }
   this.doc.internal.write('Q');
@@ -139,20 +147,22 @@ PDFDrawer.prototype.trap = function(cent, width, height, attenuation, orient, fi
   this.doc.internal.write('q');
   this.rotate(cent, dir2deg(orient));
   this.doc.lines([
-      [width, 0],
-      [-attenuation, -height],
-      [-(width - 2 * attenuation), 0]
+    [width, 0],
+    [-attenuation, -height],
+    [-(width - 2 * attenuation), 0]
   ], x0, y0, [1, 1], fill, true);
   this.doc.internal.write('Q');
 };
 PDFDrawer.prototype.p = function(x, y) {
   return add(this.center, x, y);
 };
-/** Adds text
- * @param s: The text
- * @param cent: Text will be centered (horizontally & vertically) on this point
- * @param size: Size (in pts) for the text
- * @param orient: Orientation for the text: 'up' | 'down' | 'left' | 'right'
+
+/**
+ /** Adds text
+ * @param s The text
+ * @param cent Text will be centered (horizontally & vertically) on this point
+ * @param size Size (in pts) for the text
+ * @param orient Orientation for the text: 'up' | 'down' | 'left' | 'right'
  */
 PDFDrawer.prototype.text = function(s, cent, size, orient) {
   this.doc.setFontSize(size);
@@ -183,7 +193,7 @@ function drawSleeve(_drawer, _width, _length, _depth, _fill) {
   var depth = _depth;
   var frontLength = size.x / 2;
   var tabLength = 1/4;
-  
+
   d.doc.setDrawColor(160);
   var fill = null;
   if (_fill) {
@@ -211,16 +221,16 @@ function drawSleeve(_drawer, _width, _length, _depth, _fill) {
   // left side
   var leftAnchor = d.p(-size.x / 2, -size.y / 2);
   d.doc.lines([
-      [0, -depth],
-      [frontLength, 0],
-      [size.x - frontLength, depth]
+    [0, -depth],
+    [frontLength, 0],
+    [size.x - frontLength, depth]
   ], leftAnchor.x, leftAnchor.y, [1,1], fill, true);
   // right side
   var rightAnchorAnchor = d.p(-size.x / 2, size.y / 2);
   d.doc.lines([
-      [0, depth],
-      [frontLength, 0],
-      [size.x - frontLength, -depth]
+    [0, depth],
+    [frontLength, 0],
+    [size.x - frontLength, -depth]
   ], rightAnchorAnchor.x, rightAnchorAnchor.y, [1,1], fill, true);
 
   // lr flaps
@@ -235,14 +245,14 @@ function drawSleeve(_drawer, _width, _length, _depth, _fill) {
 }
 
 function drawDrawer(_drawer, _width, _length, _height, _gap, _fill) {
-  var size = pt(_width, _length);
-  var height = _height;
-  var gap_width = _gap;
-  var d = _drawer;
-  
-  
-  d.doc.setDrawColor(160);
-  var fill = null;
+  const size = pt(_width, _length);
+  const height = _height;
+  const gap_width = _gap;
+  const d = _drawer;
+
+
+  d.doc.setDrawColor(160, undefined, undefined, undefined);
+  let fill = null;
   if (_fill) {
     d.doc.setFillColor.apply(d, hexToRgb(_fill));
     fill = 'DF';
@@ -252,13 +262,13 @@ function drawDrawer(_drawer, _width, _length, _height, _gap, _fill) {
   d.rect(null, size, fill);
 
   //left-right wings
-  var x_offset = size.x / 2 + height / 2;
+  let x_offset = size.x / 2 + height / 2;
   d.rect(d.p(x_offset, 0), pt(height, size.y), fill);
   d.rect(d.p(-x_offset, 0), pt(height, size.y), fill);
 
   //top-bottom winglets
-  var y_offset = size.y / 2 + height / 2;
-  var winglet_width = (size.x - gap_width) / 2;
+  let y_offset = size.y / 2 + height / 2;
+  const winglet_width = (size.x - gap_width) / 2;
   x_offset = (gap_width + winglet_width) / 2;
   d.rect(d.p(x_offset, y_offset), pt(winglet_width, height), fill);
   d.rect(d.p(-x_offset, y_offset), pt(winglet_width, height), fill);
@@ -266,7 +276,7 @@ function drawDrawer(_drawer, _width, _length, _height, _gap, _fill) {
   d.rect(d.p(-x_offset, -y_offset), pt(winglet_width, height), fill);
 
   // flaps
-  var flap_length = Math.min(height, winglet_width);
+  const flap_length = Math.min(height, winglet_width);
   x_offset = size.x / 2 + height / 2;
   y_offset = size.y / 2 + flap_length / 2;
   d.trap(d.p(x_offset, y_offset), height, flap_length, 1/16, 'down', fill);
@@ -276,12 +286,12 @@ function drawDrawer(_drawer, _width, _length, _height, _gap, _fill) {
 }
 
 function drawBox(_drawer, _width, _length, _height, _fill, _title, _imgs) {
-  var d = _drawer;
-  var depths = {
+  const d = _drawer;
+  const depths = {
     side_flap: _height * 0.9,
     bot_flap: _height
   }
-  var size = {
+  const size = {
     main: pt(_length, _width),
     side_panel: pt(_height, _width),
     side_flap: pt(depths.side_flap, _width),
@@ -289,22 +299,22 @@ function drawBox(_drawer, _width, _length, _height, _fill, _title, _imgs) {
     bt_flap: pt(_length, depths.bot_flap),
     top_top_flap: pt(_length, Math.max(_height / 2, 1/2))
   }
-  var height = _height;
-  
-  d.doc.setDrawColor(160);
-  var fill = null;
+  const height = _height;
+
+  d.doc.setDrawColor(160, undefined, undefined, undefined);
+  let fill = null;
   if (_fill) {
     d.doc.setFillColor.apply(d, hexToRgb(_fill));
     fill = 'DF';
   }
-  var frontImage = _imgs.boxFront;
-  var backImage = _imgs.boxBack;
-  var sideImage = _imgs.boxSide;
-  var topImage = _imgs.boxTop;
-  var totalLength = size.main.x * 2 + size.side_panel.x * 2 + size.side_flap.x;
-  var currCenterX = size.main.x * 1.5 + size.side_panel.x;
-  var totalHeight = size.main.y + size.bt_flap.y * 2 + size.top_top_flap.y;
-  var currCenterY = size.bt_flap.y + size.main.y / 2;
+  const frontImage = _imgs.boxFront;
+  const backImage = _imgs.boxBack;
+  const sideImage = _imgs.boxSide;
+  const topImage = _imgs.boxTop;
+  const totalLength = size.main.x * 2 + size.side_panel.x * 2 + size.side_flap.x;
+  const currCenterX = size.main.x * 1.5 + size.side_panel.x;
+  const totalHeight = size.main.y + size.bt_flap.y * 2 + size.top_top_flap.y;
+  const currCenterY = size.bt_flap.y + size.main.y / 2;
   d.resetCenter();
   d.center = d.p(
       (totalLength / 2 - currCenterX) / 2,
@@ -378,8 +388,8 @@ function drawBox(_drawer, _width, _length, _height, _fill, _title, _imgs) {
     },
     top_top_top: {
       loc: add(
-        panels.top.loc, 0,
-        - size.bt_flap.y - (panels.bottom.size.y + size.top_top_flap.y) / 2),
+          panels.top.loc, 0,
+          - size.bt_flap.y - (panels.bottom.size.y + size.top_top_flap.y) / 2),
       size: size.top_top_flap,
       kind: 'curved',
       orient: 'up'
@@ -389,49 +399,50 @@ function drawBox(_drawer, _width, _length, _height, _fill, _title, _imgs) {
   function drawPanel(pan) {
     d.rect(pan.loc, pan.size, fill);
   }
+
   function drawFlap(flap) {
     if (flap.kind === 'outside') {
       d.rect(flap.loc, flap.size, fill);
     } else if (flap.kind === 'curved') {
-      var att = Math.min(flap.size.x / 2, flap.size.y)
+      const att = Math.min(flap.size.x / 2, flap.size.y)
       d.flap(flap.loc, flap.size.x, flap.size.y, att, flap.orient, fill);
     } else if (flap.kind === 'curvedRight') {
-      var att = Math.min(flap.size.x, flap.size.y)
+      const att = Math.min(flap.size.x, flap.size.y)
       d.flapSingle(flap.loc, flap.size.x, flap.size.y, att, flap.orient, false, fill);
     } else if (flap.kind === 'curvedLeft') {
-      var att = Math.min(flap.size.x, flap.size.y)
+      const att = Math.min(flap.size.x, flap.size.y)
       d.flapSingle(flap.loc, flap.size.x, flap.size.y, att, flap.orient, true, fill);
     } else {
-      var att = 1/16;
+      const att = 1/16;
       d.trap(flap.loc, flap.size.x, flap.size.y, att, flap.orient, fill);
     }
   }
-  
+
   function imagePanel(img, pos, size, rot) {
-	var imageX = pos.x - size.x / 2;
-	var imageY = pos.y - size.y / 2;
-	d.doc.addImage(img, 'JPEG', imageX, imageY, size.x, size.y, null, null, rot);
+    var imageX = pos.x - size.x / 2;
+    var imageY = pos.y - size.y / 2;
+    d.doc.addImage(img, 'JPEG', imageX, imageY, size.x, size.y, null, null, rot);
   }
-  
+
   if (frontImage) {
-	imagePanel(frontImage, panels.top.loc, panels.top.size, 0);
+    imagePanel(frontImage, panels.top.loc, panels.top.size, 0);
   }
   if (backImage) {
-	imagePanel(backImage, panels.bottom.loc, panels.bottom.size, 0);
-	//TO DO - display bottom image in flap so visible behind thumb hole
+    imagePanel(backImage, panels.bottom.loc, panels.bottom.size, 0);
+    //TO DO - display bottom image in flap so visible behind thumb hole
   }
-  
+
   if (sideImage) {
-	imagePanel(sideImage, panels.left.loc, panels.left.size, 0);
-	imagePanel(sideImage, panels.right.loc, panels.right.size, 0);
+    imagePanel(sideImage, panels.left.loc, panels.left.size, 0);
+    imagePanel(sideImage, panels.right.loc, panels.right.size, 0);
   }
-  
-  if (topImage) {	  
-	imagePanel(topImage, flaps.top_top.loc, flaps.top_top.size, 0);
-	imagePanel(topImage, flaps.top_bot.loc, flaps.top_bot.size, 0);
+
+  if (topImage) {
+    imagePanel(topImage, flaps.top_top.loc, flaps.top_top.size, 0);
+    imagePanel(topImage, flaps.top_bot.loc, flaps.top_bot.size, 0);
   }
-	_.values(panels).forEach(drawPanel);
-	_.values(flaps).forEach(drawFlap);
+  _.values(panels).forEach(drawPanel);
+  _.values(flaps).forEach(drawFlap);
 
   // Add title text to panels
   d.doc.setFont('helvetica', 'bold');
@@ -441,7 +452,7 @@ function drawBox(_drawer, _width, _length, _height, _fill, _title, _imgs) {
   d.text(_title, panels.right.loc, 23, 'left');
   d.text(_title, add(panels.top.loc, 0, panels.top.size.y * 0.25), 20, 'up');
   d.text(_title, add(panels.bottom.loc, 0, panels.bottom.size.y * 0.25), 20, 'up');
-  
+
   (function drawThumbCutout() {
     var r = 1/3;
     var x = panels.bottom.loc.x - r, y = panels.bottom.loc.y - size.main.y / 2;
@@ -462,8 +473,6 @@ function drawBox(_drawer, _width, _length, _height, _fill, _title, _imgs) {
   halfWidth = size.main.x / 2;
   d.line(add(topMid, -halfWidth, 0), add(topMid, -halfWidth, cutLength));
   d.line(add(topMid, halfWidth, 0), add(topMid, halfWidth, cutLength));
-
-
 }
 
 function makeBox(
