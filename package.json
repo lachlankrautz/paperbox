@@ -1,0 +1,25 @@
+{
+  "name": "paperbox",
+  "version": "1.0.0",
+  "description": "make a tuckbox",
+  "main": "index.js",
+  "repository": "git@github.com:lachlankrautz/paperbox.git",
+  "author": "Lachlan Krautz <lachlan.krautz@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "esbuild": "^0.19.2",
+    "eslint": "^8.47.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-react": "^7.33.2",
+    "prettier": "^3.0.2",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
