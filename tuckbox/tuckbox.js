@@ -114,8 +114,8 @@ PDFDrawer.prototype.flap = function(cent, width, height, attenuation, orient, fi
 PDFDrawer.prototype.flapSingle = function(cent, width, height, attenuation, orient, flip, fill) {
   fill = fill ? fill : 'S';
   // bottom left
-  var x0 = cent.x - width / 2;
-  var y0 = cent.y + height / 2;
+  const x0 = cent.x - width / 2;
+  const y0 = cent.y + height / 2;
 
   this.doc.internal.write('q');
   this.rotate(cent, dir2deg(orient));
@@ -126,8 +126,7 @@ PDFDrawer.prototype.flapSingle = function(cent, width, height, attenuation, orie
       [attenuation - width, 0],
       [-attenuation, 0, -attenuation, attenuation, -attenuation, attenuation],
     ], x0, y0, [1, 1], fill, true);
-  }
-  else {
+  } else {
     this.doc.lines([
       [width, 0],
       [0, attenuation - height],
@@ -141,8 +140,8 @@ PDFDrawer.prototype.flapSingle = function(cent, width, height, attenuation, orie
 PDFDrawer.prototype.trap = function(cent, width, height, attenuation, orient, fill) {
   fill = fill ? fill : 'S';
   // bottom left
-  var x0 = cent.x - width / 2;
-  var y0 = cent.y + height / 2;
+  const x0 = cent.x - width / 2;
+  const y0 = cent.y + height / 2;
 
   this.doc.internal.write('q');
   this.rotate(cent, dir2deg(orient));
@@ -167,14 +166,14 @@ PDFDrawer.prototype.p = function(x, y) {
 PDFDrawer.prototype.text = function(s, cent, size, orient) {
   this.doc.setFontSize(size);
   // The * 0.6 is needed, for whatever reason, to make it centered
-  var textHeight = this.doc.internal.getLineHeight() / 72 * 0.6;
-  var textWidth = this.doc.getStringUnitWidth(s) * size / 72;
-  var rot = dir2deg(orient)
-  var r = CMrot(rot)
-  var rv = CMcomp([textWidth / 2, textHeight / 2], r)
+  const textHeight = this.doc.internal.getLineHeight() / 72 * 0.6;
+  const textWidth = this.doc.getStringUnitWidth(s) * size / 72;
+  const rot = dir2deg(orient)
+  const r = CMrot(rot)
+  const rv = CMcomp([textWidth / 2, textHeight / 2], r)
 
-  var textX = cent.x - rv[0]
-  var textY = cent.y + rv[1]
+  const textX = cent.x - rv[0]
+  const textY = cent.y + rv[1]
   this.doc.text(s, textX, textY, null, rot * 180 / Math.PI)
 }
 PDFDrawer.prototype.buildPdfUriString = function() {
@@ -188,45 +187,45 @@ PDFDrawer.prototype.flush = function() {
 }
 
 function drawSleeve(_drawer, _width, _length, _depth, _fill) {
-  var d = _drawer;
-  var size = pt(_width, _length);
-  var depth = _depth;
-  var frontLength = size.x / 2;
-  var tabLength = 1/4;
+  const d = _drawer;
+  const size = pt(_width, _length);
+  const depth = _depth;
+  const frontLength = size.x / 2;
+  const tabLength = 1/4;
 
   d.doc.setDrawColor(160);
-  var fill = null;
+  let fill = null;
   if (_fill) {
     d.doc.setFillColor.apply(d, hexToRgb(_fill));
     fill = 'DF';
   }
 
-  var totalLength = frontLength + depth + size.x + tabLength;
-  var currCenter = frontLength + depth + size.x / 2;
+  const totalLength = frontLength + depth + size.x + tabLength;
+  const currCenter = frontLength + depth + size.x / 2;
   d.resetCenter();
   d.center = d.p( - totalLength / 2 + currCenter, 0);
 
   d.rect(null, size, fill);
 
-  var botX = (size.x + depth) / - 2;
+  const botX = (size.x + depth) / - 2;
   //bottom
   d.rect(d.p(botX, 0), pt(depth, size.y), fill);
   //front
   d.rect(d.p(botX - (frontLength + depth) / 2, 0), pt(frontLength, size.y), fill);
   //bottom flaps
-  var flapLength = Math.min(frontLength, depth);
+  const flapLength = Math.min(frontLength, depth);
   d.trap(d.p(botX, (size.y + flapLength) / 2), depth, flapLength, 1/16, 'down', fill);
   d.trap(d.p(botX, (size.y + flapLength) / - 2), depth, flapLength, 1/16, 'up', fill);
 
   // left side
-  var leftAnchor = d.p(-size.x / 2, -size.y / 2);
+  const leftAnchor = d.p(-size.x / 2, -size.y / 2);
   d.doc.lines([
     [0, -depth],
     [frontLength, 0],
     [size.x - frontLength, depth]
   ], leftAnchor.x, leftAnchor.y, [1,1], fill, true);
   // right side
-  var rightAnchorAnchor = d.p(-size.x / 2, size.y / 2);
+  const rightAnchorAnchor = d.p(-size.x / 2, size.y / 2);
   d.doc.lines([
     [0, depth],
     [frontLength, 0],
@@ -234,9 +233,9 @@ function drawSleeve(_drawer, _width, _length, _depth, _fill) {
   ], rightAnchorAnchor.x, rightAnchorAnchor.y, [1,1], fill, true);
 
   // lr flaps
-  var lrFlapLength = Math.min(size.y / 2, depth);
-  var lrFlapX = d.p((size.x - frontLength) / -2, 0).x;
-  var lrFlapYOffset = size.y / 2 + depth + lrFlapLength / 2;
+  const lrFlapLength = Math.min(size.y / 2, depth);
+  const lrFlapX = d.p((size.x - frontLength) / -2, 0).x;
+  const lrFlapYOffset = size.y / 2 + depth + lrFlapLength / 2;
   d.trap(pt(lrFlapX, d.p(0, -lrFlapYOffset).y), frontLength, lrFlapLength, 1/16, 'up', fill);
   d.trap(pt(lrFlapX, d.p(0, lrFlapYOffset).y), frontLength, lrFlapLength, 1/16, 'down', fill);
 
@@ -321,7 +320,7 @@ function drawBox(_drawer, _width, _length, _height, _fill, _title, _imgs) {
       (totalHeight / 2 - currCenterY) / 2
   );
 
-  var panels = {
+  const panels = {
     top: {
       loc: d.p(size.main.x / 2, 0),
       size: size.main
@@ -339,7 +338,7 @@ function drawBox(_drawer, _width, _length, _height, _fill, _title, _imgs) {
       size: size.side_panel
     }
   }
-  var flaps = {
+  const flaps = {
     side: {
       loc: pt(panels.bottom.loc.x - (size.main.x + depths.side_flap) / 2, panels.bottom.loc.y),
       size: pt(size.side_flap.y, depths.side_flap),
@@ -419,8 +418,8 @@ function drawBox(_drawer, _width, _length, _height, _fill, _title, _imgs) {
   }
 
   function imagePanel(img, pos, size, rot) {
-    var imageX = pos.x - size.x / 2;
-    var imageY = pos.y - size.y / 2;
+    const imageX = pos.x - size.x / 2;
+    const imageY = pos.y - size.y / 2;
     d.doc.addImage(img, 'JPEG', imageX, imageY, size.x, size.y, null, null, rot);
   }
 
@@ -454,18 +453,18 @@ function drawBox(_drawer, _width, _length, _height, _fill, _title, _imgs) {
   d.text(_title, add(panels.bottom.loc, 0, panels.bottom.size.y * 0.25), 20, 'up');
 
   (function drawThumbCutout() {
-    var r = 1/3;
-    var x = panels.bottom.loc.x - r, y = panels.bottom.loc.y - size.main.y / 2;
-    var xOffset = 2 * r, yOffset = 4 / 3 * r
+    const r = 1/3;
+    const x = panels.bottom.loc.x - r, y = panels.bottom.loc.y - size.main.y / 2;
+    const xOffset = 2 * r, yOffset = 4 / 3 * r
     d.doc.lines([[0, yOffset, xOffset, yOffset, xOffset, 0]], x, y);
   })();
 
   // Add cut points
   d.doc.setDrawColor(0);
-  var cutLength = 3/8;
+  const cutLength = 3/8;
   // Top flap
-  var topMid = pt(flaps.top_top.loc.x, flaps.top_top.loc.y - flaps.top_top.size.y / 2);
-  var halfWidth = size.main.x / 2;
+  let topMid = pt(flaps.top_top.loc.x, flaps.top_top.loc.y - flaps.top_top.size.y / 2);
+  let halfWidth = size.main.x / 2;
   d.line(add(topMid, -halfWidth, 0), add(topMid, cutLength - halfWidth, 0));
   d.line(add(topMid, halfWidth, 0), add(topMid, halfWidth - cutLength, 0));
   // Back
@@ -488,9 +487,9 @@ function makeBox(
   images = images || {};
   //paper = paper === 'a4' ? 'a4' : 'letter';
 
-  var drawer = new PDFDrawer(paper);
+  const drawer = new PDFDrawer(paper);
 
-  var hasInside = false;
+  let hasInside = false;
   if (inside === 'sleeve') {
     drawSleeve(drawer, cardWidth, cardHeight, boxDepth, fillColor);
     drawer.doc.addPage();
