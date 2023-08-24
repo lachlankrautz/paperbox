@@ -19,14 +19,17 @@ PDFDrawer.prototype.setLineDash = function (segments) {
   segments = segments ? segments : [];
   this.doc.internal.write("[" + segments.join(" ") + "] 0 d");
 };
+
 PDFDrawer.prototype.rect = function (cent, size, fill) {
   cent = cent ? cent : this.center;
   fill = fill ? fill : "S";
   this.doc.rect(cent.x - size.x / 2, cent.y - size.y / 2, size.x, size.y, fill);
 };
+
 PDFDrawer.prototype.line = function (p0, p1) {
   this.doc.line(p0.x, p0.y, p1.x, p1.y);
 };
+
 PDFDrawer.prototype.rotate = function (about, deg) {
   const y = this.doc.internal.pageSize.height - about.y;
   const t0 = CMtranslate(-about.x, -y);
@@ -35,6 +38,7 @@ PDFDrawer.prototype.rotate = function (about, deg) {
   const cm = CMstr(CMcomp(CMcomp(t0, r), t1));
   this.doc.internal.write(cm);
 };
+
 PDFDrawer.prototype.flap = function (
   cent,
   width,
@@ -66,6 +70,7 @@ PDFDrawer.prototype.flap = function (
   );
   this.doc.internal.write("Q");
 };
+
 /** Draws a flap with only one curved corner */
 PDFDrawer.prototype.flapSingle = function (
   cent,
@@ -151,6 +156,7 @@ PDFDrawer.prototype.trap = function (
   );
   this.doc.internal.write("Q");
 };
+
 PDFDrawer.prototype.p = function (x, y) {
   return add(this.center, x, y);
 };
@@ -175,12 +181,15 @@ PDFDrawer.prototype.text = function (s, cent, size, orient) {
   const textY = cent.y + rv[1];
   this.doc.text(s, textX, textY, null, (rot * 180) / Math.PI);
 };
+
 PDFDrawer.prototype.buildPdfUriString = function () {
   return this.doc.output("datauristring");
 };
+
 PDFDrawer.prototype.save = function () {
   this.doc.save("tuckbox");
 };
+
 PDFDrawer.prototype.flush = function () {
   document.getElementById("pdf-preview").src = this.buildPdfUriString();
 };
