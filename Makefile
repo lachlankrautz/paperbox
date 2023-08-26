@@ -52,6 +52,13 @@ bundle: $(DIST_FILES) $(MIN_DIST_FILES)
 		--target=chrome58,firefox57,safari11,edge16 \
 		--outfile=public/assets/js/app.js
 
+watch:
+	@yarn serve public/ &
+	@while true; do \
+		inotifywait -qr -e modify -e create -e delete -e move src; \
+		make; \
+	done
+
 clean:
 	@rm -rf dist/*
 	@rm -rf public/assets/js/app.js*
