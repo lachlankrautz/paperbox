@@ -421,8 +421,8 @@ export function drawBox(
     imagePanel(topImage, flaps.top_top.loc, flaps.top_top.size, 0);
     imagePanel(topImage, flaps.top_bot.loc, flaps.top_bot.size, 0);
   }
-  _.values(panels).forEach(drawPanel);
-  _.values(flaps).forEach(drawFlap);
+  Object.values(panels).forEach(drawPanel);
+  Object.values(flaps).forEach(drawFlap);
 
   // Add title text to panels
   d.doc.setFont("helvetica", "bold");

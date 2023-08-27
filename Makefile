@@ -2,9 +2,11 @@ BASE_DIR := .
 DIST_DIR := $(BASE_DIR)/dist
 FIND_IGNORE_ARGS := -not -path '*/node_modules/*' \
 	-not -path '*/dist/*' \
+	-not -path '*/public/*' \
 	-not -path '*/.git/*'
 
 NODE_MODULES := $(BASE_DIR)/node_modules
+NODE_BIN := $(NODE_MODULES)/.bin
 YARN_DEP_FILES := package.json yarn.lock
 YARN_OUT_FILE := $(NODE_MODULES)/.yarn_integrity
 
@@ -14,11 +16,11 @@ DIST_FILES := $(patsubst %.jsx,%.js,$(DIST_FILES))
 DIST_FILES := $(patsubst %.ts,%.js,$(DIST_FILES))
 DIST_FILES := $(patsubst $(BASE_DIR)/%,$(DIST_DIR)/%,$(DIST_FILES))
 
-MIN_SRC_FILES := $(shell find $(BASE_DIR) -name '*.min.js' $(FIND_IGNORE_ARGS))
-MIN_DIST_FILES := $(patsubst $(BASE_DIR)/%.min.js,$(DIST_DIR)/%.min.js,$(MIN_SRC_FILES))
+BUNDLE_IN_FILE := $(DIST_DIR)/src/index.js
+BUNDLE_OUT_FILE := public/assets/js/index.js
 
 all: \
-	bundle
+	$(BUNDLE_OUT_FILE)
 	@echo "All done"
 
 debug:
@@ -34,23 +36,20 @@ test:
 	@echo "Running tests"
 
 $(YARN_OUT_FILE): $(YARN_DEP_FILES)
+	@echo Installing dependencies
 	@yarn install --immutable
 	@touch $(YARN_OUT_FILE)
 
-$(DIST_DIR):
-	@mkdir -p $(DIST_DIR)/lib
+$(DIST_DIR)/%.js: $(SRC_FILES) $(YARN_OUT_FILE)
+	@echo Compiling typescript
+	@$(NODE_BIN)/tsc
 
-$(DIST_DIR)/%.min.js: $(MIN_SRC_FILES) $(DIST_DIR)
-	@cp $< $@
-
-$(DIST_DIR)/%.js $(DIST_DIR)/%.jsx: $(SRC_FILES) $(YARN_OUT_FILE)
-	@yarn tsc
-
-bundle: $(DIST_FILES) $(MIN_DIST_FILES)
-	@yarn esbuild dist/src/App.js \
+$(BUNDLE_OUT_FILE): $(DIST_FILES)
+	@echo Creating bundle
+	@$(NODE_BIN)/esbuild $(BUNDLE_IN_FILE) \
 		--bundle --minify --sourcemap \
 		--target=chrome58,firefox57,safari11,edge16 \
-		--outfile=public/assets/js/app.js
+		--outfile=$(BUNDLE_OUT_FILE)
 
 watch:
 	@yarn serve public/ &
@@ -61,7 +60,7 @@ watch:
 
 clean:
 	@rm -rf dist/*
-	@rm -rf public/assets/js/app.js*
+	@rm -rf $(BUNDLE_OUT_FILE)
 	@echo "Cleaned"
 
 nuke: clean
@@ -72,7 +71,7 @@ nuke: clean
 	all \
 	install \
 	test \
-	bundle \
+	watch \
 	clean \
 	nuke \
 	debug

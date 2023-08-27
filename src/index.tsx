@@ -1,9 +1,6 @@
-import React from "react";
 import { createRoot } from "react-dom/client";
-
-function App(): React.JSX.Element {
-  return <div>Hello World!</div>;
-}
+import React from "react";
+import { Window } from "./components/Window";
 
 const domNode = document.getElementById("root");
 if (!domNode) {
@@ -11,4 +8,4 @@ if (!domNode) {
 }
 
 const root = createRoot(domNode);
-root.render(<App />);
+root.render(<Window pdfBlob="" />);

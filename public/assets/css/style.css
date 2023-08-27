@@ -7,6 +7,7 @@
   width: 600px;
   height: 450px;
   float: left;
+  border: 0;
 }
 .app > h3 {
   clear: left;
