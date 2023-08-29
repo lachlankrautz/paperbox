@@ -2,3 +2,4 @@ node_modules
 dist
 yarn-error.log
 public/assets/js/app.js*
+public/assets/js/index.js*

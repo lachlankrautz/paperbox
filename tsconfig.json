@@ -2,19 +2,17 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "dist",
-    "target": "es2016",
+    "target": "es2020",
     "module": "commonjs",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "allowJs": true,
     "jsx": "react"
   },
   "exclude": [
     "node_modules",
     "public",
     "dist",
-    "junk"
   ]
 }

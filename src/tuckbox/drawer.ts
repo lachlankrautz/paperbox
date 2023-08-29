@@ -1,28 +1,47 @@
-import { add, CMcomp, CMrot, CMstr, CMtranslate, dir2deg, pt } from "./tuckbox";
+import {
+  add,
+  CMcomp,
+  CMrot,
+  CMstr,
+  CMtranslate,
+  dir2deg,
+  Orientation,
+  Point,
+  pt,
+} from "./tuckbox";
 import jsPDF from "jspdf";
 
 export class PDFDrawer {
-  constructor(paperSize) {
+  private paperSize: string;
+  public doc: jsPDF;
+  public center: Point;
+
+  constructor(paperSize: string) {
     this.paperSize = paperSize;
     this.doc = new jsPDF("l", "in", paperSize, undefined);
-    this.resetCenter();
+
+    this.center = this.getResetCenter();
     this.doc.setLineWidth(1 / 128);
-    return this;
   }
 
-  resetCenter() {
-    this.center = pt(
+  getResetCenter(): Point {
+    return pt(
       this.doc.internal.pageSize.width / 2,
       this.doc.internal.pageSize.height / 2,
     );
   }
 
-  setLineDash(segments) {
+  resetCenter() {
+    this.center = this.getResetCenter();
+  }
+
+  // TODO unsure of type
+  setLineDash(segments: string[]) {
     segments = segments ? segments : [];
     this.doc.internal.write("[" + segments.join(" ") + "] 0 d");
   }
 
-  rect(cent, size, fill) {
+  rect(cent: Point | null, size: Point, fill?: string) {
     cent = cent ? cent : this.center;
     fill = fill ? fill : "S";
     this.doc.rect(
@@ -34,11 +53,11 @@ export class PDFDrawer {
     );
   }
 
-  line(p0, p1) {
+  line(p0: Point, p1: Point) {
     this.doc.line(p0.x, p0.y, p1.x, p1.y);
   }
 
-  rotate(about, deg) {
+  rotate(about: Point, deg: number) {
     const y = this.doc.internal.pageSize.height - about.y;
     const t0 = CMtranslate(-about.x, -y);
     const r = CMrot(deg);
@@ -47,7 +66,14 @@ export class PDFDrawer {
     this.doc.internal.write(cm);
   }
 
-  flap(cent, width, height, attenuation, orient, fill) {
+  flap(
+    cent: Point,
+    width: number,
+    height: number,
+    attenuation: number,
+    orient: Orientation,
+    fill?: string,
+  ) {
     fill = fill ? fill : "S";
     // bottom left
     const x0 = cent.x - width / 2;
@@ -80,7 +106,15 @@ export class PDFDrawer {
   }
 
   /** Draws a flap with only one curved corner */
-  flapSingle(cent, width, height, attenuation, orient, flip, fill) {
+  flapSingle(
+    cent: Point,
+    width: number,
+    height: number,
+    attenuation: number,
+    orient: Orientation,
+    flip: boolean,
+    fill?: string,
+  ) {
     fill = fill ? fill : "S";
     // bottom left
     const x0 = cent.x - width / 2;
@@ -134,7 +168,14 @@ export class PDFDrawer {
     this.doc.internal.write("Q");
   }
 
-  trap(cent, width, height, attenuation, orient, fill) {
+  trap(
+    cent: Point,
+    width: number,
+    height: number,
+    attenuation: number,
+    orient: Orientation,
+    fill?: string,
+  ) {
     fill = fill ? fill : "S";
     // bottom left
     const x0 = cent.x - width / 2;
@@ -157,7 +198,7 @@ export class PDFDrawer {
     this.doc.internal.write("Q");
   }
 
-  p(x, y) {
+  p(x: number, y: number) {
     return add(this.center, x, y);
   }
 
@@ -168,7 +209,7 @@ export class PDFDrawer {
    * @param size Size (in pts) for the text
    * @param orient Orientation for the text: 'up' | 'down' | 'left' | 'right'
    */
-  text(s, cent, size, orient) {
+  text(s: string, cent: Point, size: number, orient: Orientation) {
     this.doc.setFontSize(size);
     // The * 0.6 is needed, for whatever reason, to make it centered
     const textHeight = (this.doc.internal.getLineHeight() / 72) * 0.6;
@@ -190,7 +231,8 @@ export class PDFDrawer {
     this.doc.save("tuckbox");
   }
 
-  flush() {
-    document.getElementById("pdf-preview").src = this.buildPdfUriString();
-  }
+  // TODO if it works without it delete it
+  // flush() {
+  //   document.getElementById("pdf-preview").src = this.buildPdfUriString();
+  // }
 }

@@ -1,22 +1,42 @@
 import { PDFDrawer } from "./drawer";
+import { ImageMap } from "../components/Window";
 
-export function pt(x, y) {
+export type Point = {
+  x: number;
+  y: number;
+};
+
+export type Panel = {
+  loc: Point;
+  size: Point;
+};
+
+export type Flap = Panel & {
+  kind: string;
+  orient: Orientation;
+};
+
+export type Matrix = [number, number, number, number, number, number];
+
+export type Orientation = "up" | "down" | "left" | "right" | undefined;
+
+export function pt(x: number, y: number): Point {
   return { x: x, y: y };
 }
 
-export function add(p1, x, y) {
+export function add(p1: Point, x: number, y: number): Point {
   return pt(p1.x + x, p1.y + y);
 }
 
-export function CMrot(deg) {
+export function CMrot(deg: number) {
   return [Math.cos(deg), Math.sin(deg), -Math.sin(deg), Math.cos(deg), 0, 0];
 }
 
-export function CMtranslate(x, y) {
+export function CMtranslate(x: number, y: number) {
   return [1, 0, 0, 1, x * 72, y * 72];
 }
 
-export function CMcomp(m0, m1) {
+export function CMcomp(m0: number[], m1: number[]): Matrix {
   return [
     m0[0] * m1[0] + m0[1] * m1[2],
     m0[0] * m1[1] + m0[1] * m1[3],
@@ -29,17 +49,21 @@ export function CMcomp(m0, m1) {
   ];
 }
 
-export function CMstr(m) {
-  const round = function (n) {
+export function CMstr(m: Matrix) {
+  const round = function (n: number): string {
     return n.toFixed(3);
   };
-  const posZero = function (n) {
+  // TODO this type is so strange
+  // it will always be string but
+  // the body assumes a number
+  // setup unit test once types are working
+  const posZero = function (n: string | number) {
     return n === 0 ? 0 : n;
   };
   return m.map(round).map(posZero).join(" ") + " cm";
 }
 
-export function dir2deg(orient) {
+export function dir2deg(orient: Orientation) {
   let deg = 0;
   if (orient === "left") {
     deg = Math.PI / 2;
@@ -51,7 +75,7 @@ export function dir2deg(orient) {
   return deg;
 }
 
-export function hexToRgb(hex) {
+export function hexToRgb(hex: string): [number, number, number] {
   const bigint = parseInt(hex, 16);
   const r = (bigint >> 16) & 255;
   const g = (bigint >> 8) & 255;
@@ -59,7 +83,13 @@ export function hexToRgb(hex) {
   return [r, g, b];
 }
 
-export function drawSleeve(_drawer, _width, _length, _depth, _fill) {
+export function drawSleeve(
+  _drawer: PDFDrawer,
+  _width: number,
+  _length: number,
+  _depth: number,
+  _fill?: string,
+) {
   const d = _drawer;
   const size = pt(_width, _length);
   const depth = _depth;
@@ -67,7 +97,7 @@ export function drawSleeve(_drawer, _width, _length, _depth, _fill) {
   const tabLength = 1 / 4;
 
   d.doc.setDrawColor(160);
-  let fill = null;
+  let fill: string | undefined = undefined;
   if (_fill) {
     d.doc.setFillColor.apply(d, hexToRgb(_fill));
     fill = "DF";
@@ -169,14 +199,21 @@ export function drawSleeve(_drawer, _width, _length, _depth, _fill) {
   );
 }
 
-export function drawDrawer(_drawer, _width, _length, _height, _gap, _fill) {
+export function drawDrawer(
+  _drawer: PDFDrawer,
+  _width: number,
+  _length: number,
+  _height: number,
+  _gap: number,
+  _fill?: string,
+) {
   const size = pt(_width, _length);
   const height = _height;
   const gap_width = _gap;
   const d = _drawer;
 
-  d.doc.setDrawColor(160, undefined, undefined, undefined);
-  let fill = null;
+  d.doc.setDrawColor(160, 0, 0, 0);
+  let fill: string | undefined = undefined;
   if (_fill) {
     d.doc.setFillColor.apply(d, hexToRgb(_fill));
     fill = "DF";
@@ -210,13 +247,13 @@ export function drawDrawer(_drawer, _width, _length, _height, _gap, _fill) {
 }
 
 export function drawBox(
-  _drawer,
-  _width,
-  _length,
-  _height,
-  _fill,
-  _title,
-  _imgs,
+  _drawer: PDFDrawer,
+  _width: number,
+  _length: number,
+  _height: number,
+  _fill: string | undefined,
+  _title: string,
+  _imgs: ImageMap,
 ) {
   const d = _drawer;
   const depths = {
@@ -233,8 +270,8 @@ export function drawBox(
   };
   const height = _height;
 
-  d.doc.setDrawColor(160, undefined, undefined, undefined);
-  let fill = null;
+  d.doc.setDrawColor(160, 0, 0, 0);
+  let fill: string | undefined = undefined;
   if (_fill) {
     d.doc.setFillColor.apply(d, hexToRgb(_fill));
     fill = "DF";
@@ -254,7 +291,7 @@ export function drawBox(
     (totalHeight / 2 - currCenterY) / 2,
   );
 
-  const panels = {
+  const panels: Record<string, Panel> = {
     top: {
       loc: d.p(size.main.x / 2, 0),
       size: size.main,
@@ -272,7 +309,9 @@ export function drawBox(
       size: size.side_panel,
     },
   };
-  const flaps = {
+  // @ts-ignore
+  // @ts-ignore
+  const flaps: Record<string, Flap> = {
     side: {
       loc: pt(
         panels.bottom.loc.x - (size.main.x + depths.side_flap) / 2,
@@ -332,11 +371,13 @@ export function drawBox(
       loc: add(panels.top.loc, 0, (panels.bottom.size.y + size.bt_flap.y) / 2),
       size: size.bt_flap,
       kind: "outside",
+      orient: undefined,
     },
     top_top: {
       loc: add(panels.top.loc, 0, -(panels.bottom.size.y + size.bt_flap.y) / 2),
       size: size.bt_flap,
       kind: "outside",
+      orient: undefined,
     },
     top_top_top: {
       loc: add(
@@ -350,11 +391,11 @@ export function drawBox(
     },
   };
 
-  function drawPanel(pan) {
+  function drawPanel(pan: Panel) {
     d.rect(pan.loc, pan.size, fill);
   }
 
-  function drawFlap(flap) {
+  function drawFlap(flap: Flap) {
     if (flap.kind === "outside") {
       d.rect(flap.loc, flap.size, fill);
     } else if (flap.kind === "curved") {
@@ -388,7 +429,7 @@ export function drawBox(
     }
   }
 
-  function imagePanel(img, pos, size, rot) {
+  function imagePanel(img: string, pos: Point, size: Point, rot: number) {
     const imageX = pos.x - size.x / 2;
     const imageY = pos.y - size.y / 2;
     d.doc.addImage(
@@ -421,6 +462,7 @@ export function drawBox(
     imagePanel(topImage, flaps.top_top.loc, flaps.top_top.size, 0);
     imagePanel(topImage, flaps.top_bot.loc, flaps.top_bot.size, 0);
   }
+
   Object.values(panels).forEach(drawPanel);
   Object.values(flaps).forEach(drawFlap);
 
@@ -466,16 +508,15 @@ export function drawBox(
 }
 
 export function makeBox(
-  paper,
-  cardWidth,
-  cardHeight,
-  boxDepth,
-  inside,
-  fillColor,
-  title,
-  images,
+  paper: string,
+  cardWidth: number,
+  cardHeight: number,
+  boxDepth: number,
+  inside: string | number,
+  fillColor: string | undefined,
+  title: string,
+  images: ImageMap,
 ) {
-  images = images || {};
   //paper = paper === 'a4' ? 'a4' : 'letter';
 
   const drawer = new PDFDrawer(paper);

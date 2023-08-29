@@ -3,8 +3,15 @@ import { makeBox } from "../tuckbox/tuckbox";
 import { Configurator, PdfConfig } from "./Configurator";
 import { PreviewPane } from "./PreviewPane";
 
+export type ImageMap = {
+  boxFront?: string;
+  boxBack?: string;
+  boxSide?: string;
+  boxTop?: string;
+};
+
 const generatePdf = (params: PdfConfig) => {
-  const images = {
+  const images: ImageMap = {
     boxFront: params.imageBoxFront,
     boxBack: params.imageBoxBack,
     boxSide: params.imageBoxSide,

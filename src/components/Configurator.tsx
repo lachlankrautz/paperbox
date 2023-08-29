@@ -3,13 +3,13 @@ import React, { CSSProperties } from "react";
 // TODO validate PdfParams
 // initial type is just a guess
 export type PdfConfig = {
-  paper?: string;
-  height?: string | number;
-  width?: string | number;
-  depth?: string | number;
-  inside?: string | number;
+  paper: string;
+  height: number;
+  width: number;
+  depth: number;
+  inside: string | number;
   color?: string;
-  title?: string;
+  title: string;
   imageBoxFront?: string;
   imageBoxBack?: string;
   imageBoxSide?: string;
@@ -26,6 +26,18 @@ type State = PdfConfig & {
   colorStyle?: CSSProperties;
 };
 
+function getDimensionWithUnit(size: number, unit: string): number | Error {
+  if (size <= 0) {
+    return Error("config dimension is less than or equal to zero");
+  }
+
+  if (unit === "millimetres") {
+    return size * 0.03937;
+  }
+
+  return size;
+}
+
 export class Configurator extends React.Component<ConfiguratorProps, State> {
   constructor(props: ConfiguratorProps) {
     super(props);
@@ -40,37 +52,34 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
     };
   }
 
-  buildMeasurements() {
+  buildMeasurements(): PdfConfig | undefined {
+    const width = getDimensionWithUnit(this.state.width, this.state.unit);
+    if (width instanceof Error) {
+      return;
+    }
+
+    const height = getDimensionWithUnit(this.state.height, this.state.unit);
+    if (height instanceof Error) {
+      return;
+    }
+
+    const depth = getDimensionWithUnit(this.state.depth, this.state.unit);
+    if (depth instanceof Error) {
+      return;
+    }
+
     const measurements: PdfConfig = {
       inside: this.state.inside,
       paper: this.state.paper,
       title: this.state.title,
+      width,
+      height,
+      depth,
       imageBoxFront: this.state.imageBoxFront,
       imageBoxBack: this.state.imageBoxBack,
       imageBoxSide: this.state.imageBoxSide,
       imageBoxTop: this.state.imageBoxTop,
     };
-
-    let hasInvalid = false;
-
-    const names: (keyof Pick<State, "width" | "height" | "depth">)[] = [
-      "width",
-      "height",
-      "depth",
-    ];
-
-    names.forEach((prop) => {
-      const val = Number(this.state[prop]);
-      if (val > 0) {
-        if (this.state.unit === "millimetres") {
-          measurements[prop] = val * 0.03937;
-        } else {
-          measurements[prop] = val;
-        }
-      } else {
-        hasInvalid = true;
-      }
-    });
 
     if (this.state.color) {
       const hexMatcher = /^#?([0-9a-f]{6})/i;
@@ -80,9 +89,7 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
       }
     }
 
-    if (!hasInvalid) {
-      return measurements;
-    }
+    return measurements;
   }
 
   componentDidMount() {
@@ -124,15 +131,15 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
   }
 
   widthChange(e: React.FormEvent<HTMLInputElement>) {
-    this.changeState("width", e.currentTarget.value);
+    this.changeState("width", Number(e.currentTarget.value));
   }
 
   heightChange(e: React.FormEvent<HTMLInputElement>) {
-    this.changeState("height", e.currentTarget.value);
+    this.changeState("height", Number(e.currentTarget.value));
   }
 
   depthChange(e: React.FormEvent<HTMLInputElement>) {
-    this.changeState("depth", e.currentTarget.value);
+    this.changeState("depth", Number(e.currentTarget.value));
   }
 
   colorChange(e: React.FormEvent<HTMLInputElement>) {
