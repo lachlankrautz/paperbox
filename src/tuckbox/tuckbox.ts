@@ -309,8 +309,6 @@ export function drawBox(
       size: size.side_panel,
     },
   };
-  // @ts-ignore
-  // @ts-ignore
   const flaps: Record<string, Flap> = {
     side: {
       loc: pt(
