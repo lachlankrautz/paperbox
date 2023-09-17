@@ -13,12 +13,10 @@ import {
 import jsPDF from "jspdf";
 
 export class PDFDrawer {
-  private paperSize: string;
   public doc: jsPDF;
   public center: Point;
 
   constructor(paperSize: string) {
-    this.paperSize = paperSize;
     this.doc = new jsPDF("l", "in", paperSize, undefined);
 
     this.center = this.getResetCenter();
@@ -212,6 +210,10 @@ export class PDFDrawer {
    */
   text(s: string, cent: Point, size: number, orient: Orientation) {
     this.doc.setFontSize(size);
+
+    // TODO title should have a colour
+    // this.doc.setTextColor("#008000");
+
     // The * 0.6 is needed, for whatever reason, to make it centered
     const textHeight = (this.doc.internal.getLineHeight() / 72) * 0.6;
     const textWidth = (this.doc.getStringUnitWidth(s) * size) / 72;
@@ -253,8 +255,10 @@ export function drawDrawer(
 
   d.doc.setDrawColor(160);
   let fill: string | undefined = undefined;
+  // TODO does this even do anything?
+  // seems like fill colour is already set at this point
   if (_fill) {
-    d.doc.setFillColor.apply(d, hexToRgb(_fill));
+    d.doc.setFillColor(...hexToRgb(_fill));
     fill = "DF";
   }
 

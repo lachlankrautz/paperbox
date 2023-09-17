@@ -29,14 +29,17 @@ export function drawSleeve(
   d.rect(null, size, fill);
 
   const botX = (size.x + depth) / -2;
+
   //bottom
   d.rect(d.p(botX, 0), pt(depth, size.y), fill);
+
   //front
   d.rect(
     d.p(botX - (frontLength + depth) / 2, 0),
     pt(frontLength, size.y),
     fill,
   );
+
   //bottom flaps
   const flapLength = Math.min(frontLength, depth);
   d.trap(
@@ -70,6 +73,7 @@ export function drawSleeve(
     fill,
     true,
   );
+
   // right side
   const rightAnchorAnchor = d.p(-size.x / 2, size.y / 2);
   d.doc.lines(

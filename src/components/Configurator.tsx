@@ -8,7 +8,8 @@ export type PdfConfig = {
   width: number;
   depth: number;
   inside: string | number;
-  color?: string;
+  fillColour?: string;
+  textColour?: string;
   title: string;
   imageBoxFront?: string;
   imageBoxBack?: string;
@@ -23,7 +24,8 @@ export type ConfiguratorProps = {
 
 type State = PdfConfig & {
   unit: string;
-  colorStyle?: CSSProperties;
+  fillColourStyle?: CSSProperties;
+  textColourStyle?: CSSProperties;
 };
 
 function getDimensionWithUnit(size: number, unit: string): number | Error {
@@ -81,11 +83,19 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
       imageBoxTop: this.state.imageBoxTop,
     };
 
-    if (this.state.color) {
+    if (this.state.fillColour) {
       const hexMatcher = /^#?([0-9a-f]{6})/i;
-      const matches = hexMatcher.exec(this.state.color);
+      const matches = hexMatcher.exec(this.state.fillColour);
       if (matches) {
-        measurements.color = matches[1];
+        measurements.fillColour = matches[1];
+      }
+    }
+
+    if (this.state.textColour) {
+      const hexMatcher = /^#?([0-9a-f]{6})/i;
+      const matches = hexMatcher.exec(this.state.textColour);
+      if (matches) {
+        measurements.textColour = matches[1];
       }
     }
 
@@ -116,13 +126,29 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
   }
 
   changeState<T extends keyof State>(key: T, val: State[T]) {
-    const newState = {
+    const newState: State = {
       ...this.state,
       [key]: val,
     };
 
-    if (key === "color" && val && typeof val === "string" && val.length === 6) {
-      newState.colorStyle = {
+    if (
+      key === "fillColour" &&
+      val &&
+      typeof val === "string" &&
+      val.length === 6
+    ) {
+      newState.fillColourStyle = {
+        backgroundColor: "#" + val,
+      };
+    }
+
+    if (
+      key === "textColour" &&
+      val &&
+      typeof val === "string" &&
+      val.length === 6
+    ) {
+      newState.textColourStyle = {
         backgroundColor: "#" + val,
       };
     }
@@ -142,8 +168,12 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
     this.changeState("depth", Number(e.currentTarget.value));
   }
 
-  colorChange(e: React.FormEvent<HTMLInputElement>) {
-    this.changeState("color", e.currentTarget.value);
+  fillColourChange(e: React.FormEvent<HTMLInputElement>) {
+    this.changeState("fillColour", e.currentTarget.value);
+  }
+
+  textColourChange(e: React.FormEvent<HTMLInputElement>) {
+    this.changeState("textColour", e.currentTarget.value);
   }
 
   insideChange(e: React.FormEvent<HTMLSelectElement>) {
@@ -309,11 +339,11 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
             <input
               className="form-control"
               type="color"
-              onChange={this.colorChange.bind(this)}
-              value={this.state.color}
+              onChange={this.fillColourChange.bind(this)}
+              value={this.state.fillColour}
             />
           </div>
-          <div className="col-xs-1" style={this.state.colorStyle}>
+          <div className="col-xs-1" style={this.state.fillColourStyle}>
             &nbsp;
           </div>
         </div>
@@ -340,6 +370,20 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
               onChange={this.titleChange.bind(this)}
               value={this.state.title}
             />
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="control-label col-xs-4">Text Color</label>
+          <div className="col-xs-6">
+            <input
+              className="form-control"
+              type="color"
+              onChange={this.textColourChange.bind(this)}
+              value={this.state.textColour}
+            />
+          </div>
+          <div className="col-xs-1" style={this.state.textColourStyle}>
+            &nbsp;
           </div>
         </div>
         <div className="form-group">

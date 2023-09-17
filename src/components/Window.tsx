@@ -24,7 +24,8 @@ const generatePdf = (params: PdfConfig) => {
     params.width,
     params.depth,
     params.inside,
-    params.color,
+    params.fillColour,
+    params.textColour,
     params.title,
     images,
   );

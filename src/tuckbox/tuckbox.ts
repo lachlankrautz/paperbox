@@ -3,6 +3,25 @@ import { ImageMap } from "../components/Window";
 import { add, Flap, hexToRgb, Panel, Point, pt } from "./layout";
 import { drawSleeve } from "./sleeve";
 
+type PanelLayout = {
+  top: Panel;
+  bottom: Panel;
+  left: Panel;
+  right: Panel;
+};
+
+type FlapLayout = {
+  side: Flap;
+  bot_bot: Flap;
+  l_bot: Flap;
+  l_top: Flap;
+  r_bot: Flap;
+  r_top: Flap;
+  top_bot: Flap;
+  top_top: Flap;
+  top_top_top: Flap;
+};
+
 function drawPanel(d: PDFDrawer, pan: Panel, fill: string | undefined) {
   d.rect(pan.loc, pan.size, fill);
 }
@@ -47,10 +66,10 @@ function drawThumbCutout(
   size: BoxSize,
 ) {
   const r = 1 / 3;
-  const x = panels.bottom.loc.x - r,
-    y = panels.bottom.loc.y - size.main.y / 2;
-  const xOffset = 2 * r,
-    yOffset = (4 / 3) * r;
+  const x = panels.bottom.loc.x - r;
+  const y = panels.bottom.loc.y - size.main.y / 2;
+  const xOffset = 2 * r;
+  const yOffset = (4 / 3) * r;
   d.doc.lines([[0, yOffset, xOffset, yOffset, xOffset, 0]], x, y);
 }
 
@@ -81,6 +100,7 @@ export function drawBox(
   _length: number,
   _height: number,
   _fill: string | undefined,
+  _textColour: string | undefined,
   _title: string,
   _imgs: ImageMap,
 ) {
@@ -102,9 +122,16 @@ export function drawBox(
   d.doc.setDrawColor(160);
   let fill: string | undefined = undefined;
   if (_fill) {
-    d.doc.setFillColor.apply(d, hexToRgb(_fill));
+    d.doc.setFillColor(...hexToRgb(_fill));
     fill = "DF";
   }
+
+  console.log(`wat is: ${_textColour}`);
+  if (_textColour) {
+    console.log("setting colour to: " + _textColour);
+    d.doc.setTextColor(...hexToRgb(_textColour));
+  }
+
   const frontImage = _imgs.boxFront;
   const backImage = _imgs.boxBack;
   const sideImage = _imgs.boxSide;
@@ -114,13 +141,14 @@ export function drawBox(
   const currCenterX = size.main.x * 1.5 + size.side_panel.x;
   const totalHeight = size.main.y + size.bt_flap.y * 2 + size.top_top_flap.y;
   const currCenterY = size.bt_flap.y + size.main.y / 2;
+
   d.resetCenter();
   d.center = d.p(
     (totalLength / 2 - currCenterX) / 2,
     (totalHeight / 2 - currCenterY) / 2,
   );
 
-  const panels: Record<string, Panel> = {
+  const panels: PanelLayout = {
     top: {
       loc: d.p(size.main.x / 2, 0),
       size: size.main,
@@ -138,7 +166,8 @@ export function drawBox(
       size: size.side_panel,
     },
   };
-  const flaps: Record<string, Flap> = {
+
+  const flaps: FlapLayout = {
     side: {
       loc: pt(
         panels.bottom.loc.x - (size.main.x + depths.side_flap) / 2,
@@ -236,41 +265,49 @@ export function drawBox(
     imagePanel(d, topImage, flaps.top_bot.loc, flaps.top_bot.size, 0);
   }
 
-  Object.values(panels).forEach((panel) => drawPanel(d, panel, fill));
+  drawPanel(d, panels.top, frontImage ? undefined : fill);
+  drawPanel(d, panels.bottom, backImage ? undefined : fill);
+  drawPanel(d, panels.left, sideImage ? undefined : fill);
+  drawPanel(d, panels.right, sideImage ? undefined : fill);
+
   Object.values(flaps).forEach((flap) => drawFlap(d, flap, fill));
 
   // Add title text to panels
   d.doc.setFont("helvetica", "bold");
-  d.text(_title, flaps.top_top.loc, 20, "down");
-  d.text(_title, flaps.top_bot.loc, 20, "up");
-  d.text(_title, panels.left.loc, 23, "right");
-  d.text(_title, panels.right.loc, 23, "left");
+  // d.text(_title, flaps.top_top.loc, 20, "down");
+  // d.text(_title, flaps.top_bot.loc, 20, "up");
+  // d.text(_title, panels.left.loc, 23, "right");
+  // d.text(_title, panels.right.loc, 23, "left");
   d.text(_title, add(panels.top.loc, 0, panels.top.size.y * 0.25), 20, "up");
-  d.text(
-    _title,
-    add(panels.bottom.loc, 0, panels.bottom.size.y * 0.25),
-    20,
-    "up",
-  );
+  // d.text(
+  //   _title,
+  //   add(panels.bottom.loc, 0, panels.bottom.size.y * 0.25),
+  //   20,
+  //   "up",
+  // );
 
   drawThumbCutout(d, panels, size);
 
   // Add cut points
   d.doc.setDrawColor(0);
   const cutLength = 3 / 8;
+  const halfWidth = size.main.x / 2;
+
   // Top flap
-  let topMid = pt(
+  const topMid = pt(
     flaps.top_top.loc.x,
     flaps.top_top.loc.y - flaps.top_top.size.y / 2,
   );
-  let halfWidth = size.main.x / 2;
   d.line(add(topMid, -halfWidth, 0), add(topMid, cutLength - halfWidth, 0));
   d.line(add(topMid, halfWidth, 0), add(topMid, halfWidth - cutLength, 0));
+
   // Back
-  topMid = pt(panels.top.loc.x, panels.top.loc.y - panels.top.size.y / 2);
-  halfWidth = size.main.x / 2;
-  d.line(add(topMid, -halfWidth, 0), add(topMid, -halfWidth, cutLength));
-  d.line(add(topMid, halfWidth, 0), add(topMid, halfWidth, cutLength));
+  const backMid = pt(
+    panels.top.loc.x,
+    panels.top.loc.y - panels.top.size.y / 2,
+  );
+  d.line(add(backMid, -halfWidth, 0), add(backMid, -halfWidth, cutLength));
+  d.line(add(backMid, halfWidth, 0), add(backMid, halfWidth, cutLength));
 }
 
 export function makeBox(
@@ -279,7 +316,8 @@ export function makeBox(
   cardHeight: number,
   boxDepth: number,
   inside: string | number,
-  fillColor: string | undefined,
+  fillColour: string | undefined,
+  textColour: string | undefined,
   title: string,
   images: ImageMap,
 ) {
@@ -289,13 +327,13 @@ export function makeBox(
 
   let hasInside = false;
   if (inside === "sleeve") {
-    drawSleeve(drawer, cardWidth, cardHeight, boxDepth, fillColor);
+    drawSleeve(drawer, cardWidth, cardHeight, boxDepth, fillColour);
     drawer.doc.addPage();
     hasInside = true;
   } else if (inside === "tray") {
     drawer.resetCenter();
     drawer.doc.setLineWidth(1 / 128);
-    drawDrawer(drawer, cardWidth, cardHeight, boxDepth, 1, fillColor);
+    drawDrawer(drawer, cardWidth, cardHeight, boxDepth, 1, fillColour);
     drawer.doc.addPage();
     hasInside = true;
   }
@@ -306,7 +344,16 @@ export function makeBox(
     cardHeight += 1 / 16;
     boxDepth += 1 / 16;
   }
-  drawBox(drawer, cardWidth, cardHeight, boxDepth, fillColor, title, images);
+  drawBox(
+    drawer,
+    cardWidth,
+    cardHeight,
+    boxDepth,
+    fillColour,
+    textColour,
+    title,
+    images,
+  );
 
   return drawer;
 }
