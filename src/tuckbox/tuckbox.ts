@@ -27,7 +27,7 @@ export function drawBox(
   };
   const height = _height;
 
-  d.doc.setDrawColor(160, 0, 0, 0);
+  d.doc.setDrawColor(160);
   let fill: string | undefined = undefined;
   if (_fill) {
     d.doc.setFillColor.apply(d, hexToRgb(_fill));
