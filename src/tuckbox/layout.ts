@@ -47,14 +47,14 @@ export function CMcomp(m0: number[], m1: number[]): Matrix {
 }
 
 export function CMstr(m: Matrix) {
-  const round = function (n: number): string {
+  const round = (n: number): string => {
     return n.toFixed(3);
   };
   // TODO this type is so strange
   // it will always be string but
   // the body assumes a number
   // setup unit test once types are working
-  const posZero = function (n: string | number) {
+  const posZero = (n: string | number) => {
     return n === 0 ? 0 : n;
   };
   return m.map(round).map(posZero).join(" ") + " cm";

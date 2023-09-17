@@ -3,6 +3,78 @@ import { ImageMap } from "../components/Window";
 import { add, Flap, hexToRgb, Panel, Point, pt } from "./layout";
 import { drawSleeve } from "./sleeve";
 
+function drawPanel(d: PDFDrawer, pan: Panel, fill: string | undefined) {
+  d.rect(pan.loc, pan.size, fill);
+}
+
+function drawFlap(d: PDFDrawer, flap: Flap, fill: string | undefined) {
+  if (flap.kind === "outside") {
+    d.rect(flap.loc, flap.size, fill);
+  } else if (flap.kind === "curved") {
+    const att = Math.min(flap.size.x / 2, flap.size.y);
+    d.flap(flap.loc, flap.size.x, flap.size.y, att, flap.orient, fill);
+  } else if (flap.kind === "curvedRight") {
+    const att = Math.min(flap.size.x, flap.size.y);
+    d.flapSingle(
+      flap.loc,
+      flap.size.x,
+      flap.size.y,
+      att,
+      flap.orient,
+      false,
+      fill,
+    );
+  } else if (flap.kind === "curvedLeft") {
+    const att = Math.min(flap.size.x, flap.size.y);
+    d.flapSingle(
+      flap.loc,
+      flap.size.x,
+      flap.size.y,
+      att,
+      flap.orient,
+      true,
+      fill,
+    );
+  } else {
+    const att = 1 / 16;
+    d.trap(flap.loc, flap.size.x, flap.size.y, att, flap.orient, fill);
+  }
+}
+
+function drawThumbCutout(
+  d: PDFDrawer,
+  panels: Record<string, Panel>,
+  size: BoxSize,
+) {
+  const r = 1 / 3;
+  const x = panels.bottom.loc.x - r,
+    y = panels.bottom.loc.y - size.main.y / 2;
+  const xOffset = 2 * r,
+    yOffset = (4 / 3) * r;
+  d.doc.lines([[0, yOffset, xOffset, yOffset, xOffset, 0]], x, y);
+}
+
+function imagePanel(
+  d: PDFDrawer,
+  img: string,
+  pos: Point,
+  size: Point,
+  rot: number,
+) {
+  const imageX = pos.x - size.x / 2;
+  const imageY = pos.y - size.y / 2;
+  d.doc.addImage(img, "JPEG", imageX, imageY, size.x, size.y, null, null, rot);
+}
+
+type BoxSize = {
+  main: Point;
+  side_panel: Point;
+  side_flap: Point;
+  lr_flap: Point;
+  bt_flap: Point;
+  top_top_flap: Point;
+};
+
 export function drawBox(
   _drawer: PDFDrawer,
   _width: number,
@@ -17,7 +89,7 @@ export function drawBox(
     side_flap: _height * 0.9,
     bot_flap: _height,
   };
-  const size = {
+  const size: BoxSize = {
     main: pt(_length, _width),
     side_panel: pt(_height, _width),
     side_flap: pt(depths.side_flap, _width),
@@ -146,80 +218,26 @@ export function drawBox(
     },
   };
 
-  function drawPanel(pan: Panel) {
-    d.rect(pan.loc, pan.size, fill);
-  }
-
-  function drawFlap(flap: Flap) {
-    if (flap.kind === "outside") {
-      d.rect(flap.loc, flap.size, fill);
-    } else if (flap.kind === "curved") {
-      const att = Math.min(flap.size.x / 2, flap.size.y);
-      d.flap(flap.loc, flap.size.x, flap.size.y, att, flap.orient, fill);
-    } else if (flap.kind === "curvedRight") {
-      const att = Math.min(flap.size.x, flap.size.y);
-      d.flapSingle(
-        flap.loc,
-        flap.size.x,
-        flap.size.y,
-        att,
-        flap.orient,
-        false,
-        fill,
-      );
-    } else if (flap.kind === "curvedLeft") {
-      const att = Math.min(flap.size.x, flap.size.y);
-      d.flapSingle(
-        flap.loc,
-        flap.size.x,
-        flap.size.y,
-        att,
-        flap.orient,
-        true,
-        fill,
-      );
-    } else {
-      const att = 1 / 16;
-      d.trap(flap.loc, flap.size.x, flap.size.y, att, flap.orient, fill);
-    }
-  }
-
-  function imagePanel(img: string, pos: Point, size: Point, rot: number) {
-    const imageX = pos.x - size.x / 2;
-    const imageY = pos.y - size.y / 2;
-    d.doc.addImage(
-      img,
-      "JPEG",
-      imageX,
-      imageY,
-      size.x,
-      size.y,
-      null,
-      null,
-      rot,
-    );
-  }
-
   if (frontImage) {
-    imagePanel(frontImage, panels.top.loc, panels.top.size, 0);
+    imagePanel(d, frontImage, panels.top.loc, panels.top.size, 0);
   }
   if (backImage) {
-    imagePanel(backImage, panels.bottom.loc, panels.bottom.size, 0);
-    //TO DO - display bottom image in flap so visible behind thumb hole
+    imagePanel(d, backImage, panels.bottom.loc, panels.bottom.size, 0);
+    // TODO - display bottom image in flap so visible behind thumb hole
   }
 
   if (sideImage) {
-    imagePanel(sideImage, panels.left.loc, panels.left.size, 0);
-    imagePanel(sideImage, panels.right.loc, panels.right.size, 0);
+    imagePanel(d, sideImage, panels.left.loc, panels.left.size, 0);
+    imagePanel(d, sideImage, panels.right.loc, panels.right.size, 0);
   }
 
   if (topImage) {
-    imagePanel(topImage, flaps.top_top.loc, flaps.top_top.size, 0);
-    imagePanel(topImage, flaps.top_bot.loc, flaps.top_bot.size, 0);
+    imagePanel(d, topImage, flaps.top_top.loc, flaps.top_top.size, 0);
+    imagePanel(d, topImage, flaps.top_bot.loc, flaps.top_bot.size, 0);
   }
 
-  Object.values(panels).forEach(drawPanel);
-  Object.values(flaps).forEach(drawFlap);
+  Object.values(panels).forEach((panel) => drawPanel(d, panel, fill));
+  Object.values(flaps).forEach((flap) => drawFlap(d, flap, fill));
 
   // Add title text to panels
   d.doc.setFont("helvetica", "bold");
@@ -235,14 +253,7 @@ export function drawBox(
     "up",
   );
 
-  (function drawThumbCutout() {
-    const r = 1 / 3;
-    const x = panels.bottom.loc.x - r,
-      y = panels.bottom.loc.y - size.main.y / 2;
-    const xOffset = 2 * r,
-      yOffset = (4 / 3) * r;
-    d.doc.lines([[0, yOffset, xOffset, yOffset, xOffset, 0]], x, y);
-  })();
+  drawThumbCutout(d, panels, size);
 
   // Add cut points
   d.doc.setDrawColor(0);
