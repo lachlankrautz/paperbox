@@ -126,9 +126,7 @@ export function drawBox(
     fill = "DF";
   }
 
-  console.log(`wat is: ${_textColour}`);
   if (_textColour) {
-    console.log("setting colour to: " + _textColour);
     d.doc.setTextColor(...hexToRgb(_textColour));
   }
 
