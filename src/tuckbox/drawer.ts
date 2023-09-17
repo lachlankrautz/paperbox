@@ -5,10 +5,11 @@ import {
   CMstr,
   CMtranslate,
   dir2deg,
+  hexToRgb,
   Orientation,
   Point,
   pt,
-} from "./tuckbox";
+} from "./layout";
 import jsPDF from "jspdf";
 
 export class PDFDrawer {
@@ -235,4 +236,51 @@ export class PDFDrawer {
   // flush() {
   //   document.getElementById("pdf-preview").src = this.buildPdfUriString();
   // }
+}
+
+export function drawDrawer(
+  _drawer: PDFDrawer,
+  _width: number,
+  _length: number,
+  _height: number,
+  _gap: number,
+  _fill?: string,
+) {
+  const size = pt(_width, _length);
+  const height = _height;
+  const gap_width = _gap;
+  const d = _drawer;
+
+  d.doc.setDrawColor(160, 0, 0, 0);
+  let fill: string | undefined = undefined;
+  if (_fill) {
+    d.doc.setFillColor.apply(d, hexToRgb(_fill));
+    fill = "DF";
+  }
+
+  //base
+  d.rect(null, size, fill);
+
+  //left-right wings
+  let x_offset = size.x / 2 + height / 2;
+  d.rect(d.p(x_offset, 0), pt(height, size.y), fill);
+  d.rect(d.p(-x_offset, 0), pt(height, size.y), fill);
+
+  //top-bottom winglets
+  let y_offset = size.y / 2 + height / 2;
+  const winglet_width = (size.x - gap_width) / 2;
+  x_offset = (gap_width + winglet_width) / 2;
+  d.rect(d.p(x_offset, y_offset), pt(winglet_width, height), fill);
+  d.rect(d.p(-x_offset, y_offset), pt(winglet_width, height), fill);
+  d.rect(d.p(x_offset, -y_offset), pt(winglet_width, height), fill);
+  d.rect(d.p(-x_offset, -y_offset), pt(winglet_width, height), fill);
+
+  // flaps
+  const flap_length = Math.min(height, winglet_width);
+  x_offset = size.x / 2 + height / 2;
+  y_offset = size.y / 2 + flap_length / 2;
+  d.trap(d.p(x_offset, y_offset), height, flap_length, 1 / 16, "down", fill);
+  d.trap(d.p(-x_offset, y_offset), height, flap_length, 1 / 16, "down", fill);
+  d.trap(d.p(x_offset, -y_offset), height, flap_length, 1 / 16, "up", fill);
+  d.trap(d.p(-x_offset, -y_offset), height, flap_length, 1 / 16, "up", fill);
 }
