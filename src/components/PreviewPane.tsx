@@ -5,11 +5,5 @@ export type PreviewPaneProps = {
 };
 
 export function PreviewPane(props: PreviewPaneProps): React.JSX.Element {
-  return (
-    <iframe
-      className="preview"
-      // type="application/pdf"
-      src={props.pdfBlob || undefined}
-    />
-  );
+  return <iframe className="preview" src={props.pdfBlob || undefined} />;
 }

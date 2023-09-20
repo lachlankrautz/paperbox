@@ -2,6 +2,8 @@ import { drawDrawer, PDFDrawer } from "./drawer";
 import { ImageMap } from "../components/Window";
 import { add, Flap, hexToRgb, Panel, Point, pt } from "./layout";
 import { drawSleeve } from "./sleeve";
+// import makePica, { Pica } from "pica";
+// const pica: Pica = makePica();
 
 type PanelLayout = {
   top: Panel;
@@ -75,14 +77,26 @@ function drawThumbCutout(
 
 function imagePanel(
   d: PDFDrawer,
-  img: string,
+  img: HTMLImageElement,
   pos: Point,
   size: Point,
   rot: number,
 ) {
+  // pica.
+  // pica.resize();
   const imageX = pos.x - size.x / 2;
   const imageY = pos.y - size.y / 2;
-  d.doc.addImage(img, "JPEG", imageX, imageY, size.x, size.y, null, null, rot);
+  d.doc.addImage(
+    img.src,
+    "JPEG",
+    imageX,
+    imageY,
+    size.x,
+    size.y,
+    null,
+    null,
+    rot,
+  );
 }
 
 type BoxSize = {

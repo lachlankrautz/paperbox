@@ -8,13 +8,13 @@ export type PdfConfig = {
   width: number;
   depth: number;
   inside: string | number;
-  fillColour?: string;
-  textColour?: string;
+  fillColour: string;
+  textColour: string;
   title: string;
-  imageBoxFront?: string;
-  imageBoxBack?: string;
-  imageBoxSide?: string;
-  imageBoxTop?: string;
+  frontImage?: HTMLImageElement;
+  backImage?: HTMLImageElement;
+  sideImage?: HTMLImageElement;
+  topImage?: HTMLImageElement;
 };
 
 export type ConfiguratorProps = {
@@ -51,6 +51,8 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
       width: 64,
       depth: 13,
       title: "",
+      fillColour: "#ffffff",
+      textColour: "#000000",
     };
   }
 
@@ -77,10 +79,12 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
       width,
       height,
       depth,
-      imageBoxFront: this.state.imageBoxFront,
-      imageBoxBack: this.state.imageBoxBack,
-      imageBoxSide: this.state.imageBoxSide,
-      imageBoxTop: this.state.imageBoxTop,
+      fillColour: this.state.fillColour,
+      textColour: this.state.textColour,
+      frontImage: this.state.frontImage,
+      backImage: this.state.backImage,
+      sideImage: this.state.sideImage,
+      topImage: this.state.topImage,
     };
 
     if (this.state.fillColour) {
@@ -193,75 +197,87 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
   }
 
   imageBoxBackChange(e: React.FormEvent<HTMLInputElement>) {
-    if (e.currentTarget.files) {
-      const file = e.currentTarget.files[0];
-
-      const reader = new FileReader();
-      reader.addEventListener("load", () => {
-        const dataUrl = reader.result;
-        if (typeof dataUrl === "string") {
-          this.changeState("imageBoxBack", dataUrl);
-        }
-      });
-
-      reader.readAsDataURL(file);
-    } else {
-      this.changeState("imageBoxBack", undefined);
+    const file = e.currentTarget.files?.[0];
+    if (!file) {
+      this.changeState("backImage", undefined);
+      return;
     }
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      const imageData = reader.result;
+      if (typeof imageData === "string") {
+        const img = new Image();
+        img.src = imageData;
+        img.onload = () => {
+          this.changeState("backImage", img);
+        };
+      }
+    });
+    reader.readAsDataURL(file);
   }
 
   imageBoxFrontChange(e: React.FormEvent<HTMLInputElement>) {
-    if (e.currentTarget.files) {
-      const file = e.currentTarget.files[0];
-
-      const reader = new FileReader();
-      reader.addEventListener("load", () => {
-        const dataUrl = reader.result;
-        if (typeof dataUrl === "string") {
-          this.changeState("imageBoxFront", dataUrl);
-        }
-      });
-
-      reader.readAsDataURL(file);
-    } else {
-      this.changeState("imageBoxFront", undefined);
+    const file = e.currentTarget.files?.[0];
+    if (!file) {
+      this.changeState("frontImage", undefined);
+      return;
     }
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      const imageData = reader.result;
+      if (typeof imageData === "string") {
+        const img = new Image();
+        img.src = imageData;
+        img.onload = () => {
+          this.changeState("frontImage", img);
+        };
+      }
+    });
+    reader.readAsDataURL(file);
   }
 
   imageBoxSideChange(e: React.FormEvent<HTMLInputElement>) {
-    if (e.currentTarget.files) {
-      const file = e.currentTarget.files[0];
-
-      const reader = new FileReader();
-      reader.addEventListener("load", () => {
-        const dataUrl = reader.result;
-        if (typeof dataUrl === "string") {
-          this.changeState("imageBoxSide", dataUrl);
-        }
-      });
-
-      reader.readAsDataURL(file);
-    } else {
-      this.changeState("imageBoxSide", undefined);
+    const file = e.currentTarget.files?.[0];
+    if (!file) {
+      this.changeState("sideImage", undefined);
+      return;
     }
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      const imageData = reader.result;
+      if (typeof imageData === "string") {
+        const img = new Image();
+        img.src = imageData;
+        img.onload = () => {
+          this.changeState("sideImage", img);
+        };
+      }
+    });
+    reader.readAsDataURL(file);
   }
 
   imageBoxTopChange(e: React.FormEvent<HTMLInputElement>) {
-    if (e.currentTarget.files) {
-      const file = e.currentTarget.files[0];
-
-      const reader = new FileReader();
-      reader.addEventListener("load", () => {
-        const dataUrl = reader.result;
-        if (typeof dataUrl === "string") {
-          this.changeState("imageBoxTop", dataUrl);
-        }
-      });
-
-      reader.readAsDataURL(file);
-    } else {
-      this.changeState("imageBoxTop", undefined);
+    const file = e.currentTarget.files?.[0];
+    if (!file) {
+      this.changeState("topImage", undefined);
+      return;
     }
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      const imageData = reader.result;
+      if (typeof imageData === "string") {
+        const img = new Image();
+        img.src = imageData;
+        img.onload = () => {
+          this.changeState("topImage", img);
+        };
+      }
+    });
+    reader.readAsDataURL(file);
   }
 
   render() {

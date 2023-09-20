@@ -47,9 +47,11 @@ $(DIST_DIR)/%.js: $(SRC_FILES) $(YARN_OUT_FILE)
 $(BUNDLE_OUT_FILE): $(DIST_FILES)
 	@echo Creating bundle
 	@$(NODE_BIN)/esbuild $(BUNDLE_IN_FILE) \
-		--bundle --minify --sourcemap \
+		--bundle --sourcemap \
 		--target=chrome58,firefox57,safari11,edge16 \
 		--outfile=$(BUNDLE_OUT_FILE)
+
+#--bundle --minify --sourcemap \
 
 watch:
 	@yarn serve public/ &

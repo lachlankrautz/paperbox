@@ -4,18 +4,18 @@ import { Configurator, PdfConfig } from "./Configurator";
 import { PreviewPane } from "./PreviewPane";
 
 export type ImageMap = {
-  boxFront?: string;
-  boxBack?: string;
-  boxSide?: string;
-  boxTop?: string;
+  boxFront?: HTMLImageElement;
+  boxBack?: HTMLImageElement;
+  boxSide?: HTMLImageElement;
+  boxTop?: HTMLImageElement;
 };
 
 const generatePdf = (params: PdfConfig) => {
   const images: ImageMap = {
-    boxFront: params.imageBoxFront,
-    boxBack: params.imageBoxBack,
-    boxSide: params.imageBoxSide,
-    boxTop: params.imageBoxTop,
+    boxFront: params.frontImage,
+    boxBack: params.backImage,
+    boxSide: params.sideImage,
+    boxTop: params.topImage,
   };
 
   return makeBox(
