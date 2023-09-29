@@ -30,7 +30,10 @@ export function CMrot(deg: number) {
 }
 
 export function CMtranslate(x: number, y: number) {
-  return [1, 0, 0, 1, x * 72, y * 72];
+  const inchesToMm = 0.03937;
+  // TODO is this pixels? not really sure
+  const pixels = 72;
+  return [1, 0, 0, 1, x * pixels * inchesToMm, y * pixels * inchesToMm];
 }
 
 export function CMcomp(m0: number[], m1: number[]): Matrix {

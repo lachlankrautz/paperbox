@@ -3,7 +3,6 @@ import React, { CSSProperties } from "react";
 // TODO validate PdfParams
 // initial type is just a guess
 export type PdfConfig = {
-  paper: string;
   height: number;
   width: number;
   depth: number;
@@ -23,29 +22,14 @@ export type ConfiguratorProps = {
 };
 
 type State = PdfConfig & {
-  unit: string;
   fillColourStyle?: CSSProperties;
   textColourStyle?: CSSProperties;
 };
-
-function getDimensionWithUnit(size: number, unit: string): number | Error {
-  if (size <= 0) {
-    return Error("config dimension is less than or equal to zero");
-  }
-
-  if (unit === "millimetres") {
-    return size * 0.03937;
-  }
-
-  return size;
-}
 
 export class Configurator extends React.Component<ConfiguratorProps, State> {
   constructor(props: ConfiguratorProps) {
     super(props);
     this.state = {
-      paper: "a4",
-      unit: "millimetres",
       inside: "none",
       height: 89,
       width: 64,
@@ -57,28 +41,12 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
   }
 
   buildMeasurements(): PdfConfig | undefined {
-    const width = getDimensionWithUnit(this.state.width, this.state.unit);
-    if (width instanceof Error) {
-      return;
-    }
-
-    const height = getDimensionWithUnit(this.state.height, this.state.unit);
-    if (height instanceof Error) {
-      return;
-    }
-
-    const depth = getDimensionWithUnit(this.state.depth, this.state.unit);
-    if (depth instanceof Error) {
-      return;
-    }
-
     const measurements: PdfConfig = {
       inside: this.state.inside,
-      paper: this.state.paper,
       title: this.state.title,
-      width,
-      height,
-      depth,
+      width: this.state.width,
+      height: this.state.height,
+      depth: this.state.depth,
       fillColour: this.state.fillColour,
       textColour: this.state.textColour,
       frontImage: this.state.frontImage,
@@ -184,14 +152,6 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
     this.changeState("inside", e.currentTarget.value);
   }
 
-  paperChange(e: React.FormEvent<HTMLSelectElement>) {
-    this.changeState("paper", e.currentTarget.value);
-  }
-
-  unitChange(e: React.FormEvent<HTMLSelectElement>) {
-    this.changeState("unit", e.currentTarget.value);
-  }
-
   titleChange(e: React.FormEvent<HTMLInputElement>) {
     this.changeState("title", e.currentTarget.value);
   }
@@ -286,36 +246,6 @@ export class Configurator extends React.Component<ConfiguratorProps, State> {
         className="configurator form-horizontal"
         onSubmit={this.handleSubmit.bind(this)}
       >
-        <div className="form-group">
-          <label className="control-label col-xs-4">Paper Size</label>
-          <div className="col-xs-8">
-            <select
-              className="form-control"
-              onChange={this.paperChange.bind(this)}
-              value={this.state.paper}
-            >
-              <option value="letter">Letter</option>
-              <option value="a4">A4</option>
-              <option value="a0">A0</option>
-              <option value="a1">A1</option>
-              <option value="a2">A2</option>
-              <option value="a3">A3</option>
-            </select>
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="control-label col-xs-4">Unit</label>
-          <div className="col-xs-8">
-            <select
-              className="form-control"
-              onChange={this.unitChange.bind(this)}
-              value={this.state.unit}
-            >
-              <option value="inches">Inches</option>
-              <option value="millimetres">Millimetres</option>
-            </select>
-          </div>
-        </div>
         <div className="form-group">
           <label className="control-label col-xs-4">Card width</label>
           <div className="col-xs-8">

@@ -16,11 +16,10 @@ export class PDFDrawer {
   public doc: jsPDF;
   public center: Point;
 
-  constructor(paperSize: string) {
-    this.doc = new jsPDF("l", "in", paperSize, undefined);
-
+  constructor() {
+    this.doc = new jsPDF("l", "mm", "a4", undefined);
     this.center = this.getResetCenter();
-    this.doc.setLineWidth(1 / 128);
+    this.doc.setLineWidth(0.2);
   }
 
   getResetCenter(): Point {
@@ -215,8 +214,10 @@ export class PDFDrawer {
     // this.doc.setTextColor("#008000");
 
     // The * 0.6 is needed, for whatever reason, to make it centered
-    const textHeight = (this.doc.internal.getLineHeight() / 72) * 0.6;
-    const textWidth = (this.doc.getStringUnitWidth(s) * size) / 72;
+    const inchesToMm = 0.03937;
+    const textHeight =
+      ((this.doc.internal.getLineHeight() / 72) * 0.6) / inchesToMm;
+    const textWidth = (this.doc.getStringUnitWidth(s) * size) / 72 / inchesToMm;
     const rot = dir2deg(orient);
     const r = CMrot(rot);
     const rv = CMcomp([textWidth / 2, textHeight / 2], r);
@@ -283,8 +284,8 @@ export function drawDrawer(
   const flap_length = Math.min(height, winglet_width);
   x_offset = size.x / 2 + height / 2;
   y_offset = size.y / 2 + flap_length / 2;
-  d.trap(d.p(x_offset, y_offset), height, flap_length, 1 / 16, "down", fill);
-  d.trap(d.p(-x_offset, y_offset), height, flap_length, 1 / 16, "down", fill);
-  d.trap(d.p(x_offset, -y_offset), height, flap_length, 1 / 16, "up", fill);
-  d.trap(d.p(-x_offset, -y_offset), height, flap_length, 1 / 16, "up", fill);
+  d.trap(d.p(x_offset, y_offset), height, flap_length, 1.5, "down", fill);
+  d.trap(d.p(-x_offset, y_offset), height, flap_length, 1.5, "down", fill);
+  d.trap(d.p(x_offset, -y_offset), height, flap_length, 1.5, "up", fill);
+  d.trap(d.p(-x_offset, -y_offset), height, flap_length, 1.5, "up", fill);
 }

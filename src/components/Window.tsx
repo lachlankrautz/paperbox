@@ -19,7 +19,6 @@ const generatePdf = (params: PdfConfig) => {
   };
 
   return makeBox(
-    params.paper,
     params.height,
     params.width,
     params.depth,
